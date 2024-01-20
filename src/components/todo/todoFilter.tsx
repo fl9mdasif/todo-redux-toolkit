@@ -15,9 +15,7 @@ import {
 import { useAppDispatch } from "@/redux/hooks";
 import { filterTodo } from "@/redux/features/ToDoSlice";
 
-const TodoFilter = () => {
-  const [priority, setPriority] = React.useState("all");
-
+const TodoFilter = ({ priority, setPriority }) => {
   // console.log(priority);
   const dispatch = useAppDispatch();
 
@@ -42,7 +40,7 @@ const TodoFilter = () => {
           onValueChange={handlePriorityChange}
           value={priority}
         >
-          <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+          {/* <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem> */}
           <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>

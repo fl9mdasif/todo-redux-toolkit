@@ -7,11 +7,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DialogClose } from "@radix-ui/react-dialog";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addToDo } from "@/redux/features/ToDoSlice";
-import { useAppDispatch } from "@/redux/hooks";
-import { DialogClose } from "@radix-ui/react-dialog";
+import { useAddTodoMutation } from "@/redux/api/api";
 import { FormEvent, useState } from "react";
 
 const AddTodoModel = () => {
@@ -20,21 +30,27 @@ const AddTodoModel = () => {
   const [priority, setPriority] = useState("");
 
   // dispatch
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
+  //
+  // using the RTK QUERY
+  const [addToDo, { data, isLoading, isSuccess, isError }] =
+    useAddTodoMutation();
 
   const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    const randomString = Math.random().toString(36).substring(2, 8);
+    +e.preventDefault();
 
     const taskDetails = {
-      id: randomString,
       title: task,
-      description: description,
       priority: priority,
+      isComplete: false,
+      description: description,
     };
-    // console.log(taskDetails);
-    dispatch(addToDo(taskDetails));
+
+    // post the data by RTK Query
+    addToDo(taskDetails);
+
+    // dispatch used for local state  management
+    // dispatch(addToDo(taskDetails));
   };
   return (
     <div>
@@ -65,17 +81,6 @@ const AddTodoModel = () => {
                   className="col-span-3"
                 />
               </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="priority" className="text-right">
-                  Priority
-                </Label>
-                <Input
-                  onBlur={(e) => setPriority(e.target.value)}
-                  id="priority"
-                  className="col-span-3"
-                />
-              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">
                   Description
@@ -85,6 +90,24 @@ const AddTodoModel = () => {
                   id="description"
                   className="col-span-3"
                 />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="priority" className="text-right">
+                  Priority
+                </Label>
+                <Select onValueChange={(value) => setPriority(value)}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Priority</SelectLabel>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div>

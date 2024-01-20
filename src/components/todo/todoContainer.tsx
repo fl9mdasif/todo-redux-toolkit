@@ -1,16 +1,14 @@
+import { useState } from "react";
 import AddTodoModel from "./addTodoModel";
 import TodoCard, { TTodoCardProps } from "./todoCard";
 import TodoFilter from "./todoFilter";
 import { useGetTodosQuery } from "@/redux/api/api";
 
 const TodoContainer = () => {
-  // useSelector for localhost
-  // const { filterTodos } = useAppSelector((state) => state.todos_reducer);
-  // const dispatch = useAppDispatch();
-
+  const [priority, setPriority] = useState("");
   // from server side fetching
-  const { data, error, isLoading } = useGetTodosQuery(undefined);
-  // console.log(error);
+  const { data, isLoading } = useGetTodosQuery(priority, {});
+  // console.log(data);
   if (isLoading) {
     return <p>Loading.....</p>;
   }
@@ -19,7 +17,7 @@ const TodoContainer = () => {
       <div className="flex justify-between mb-5">
         <AddTodoModel />
 
-        <TodoFilter />
+        <TodoFilter priority={priority} setPriority={setPriority} />
       </div>
       <div className="bg-primary-gradient w-full h-full rounded-xl  p-[5px]">
         {/* <div className="bg-white p-3 flex justify-center -items-center">
@@ -28,12 +26,7 @@ const TodoContainer = () => {
           </p>
         </div> */}
         <div className="bg-white p-5 w-full h-full rounded-lg space-y-2">
-          {/* {todos.map((item) => (
-            <TodoCard {...item} />
-          ))}
-        </div>
-        <div> */}
-          {data?.map((item: TTodoCardProps) => (
+          {data.data?.map((item: TTodoCardProps) => (
             <TodoCard {...item} />
           ))}
         </div>

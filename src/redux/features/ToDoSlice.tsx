@@ -30,17 +30,22 @@ export const todoSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    addToDo: (state, action: PayloadAction<TToDo>) => {
-      state.todos.push({ ...action.payload, isCompleted: false });
-      state.filterTodos = applyFilter(state.todos, state.filter);
-    },
-    removeTodo: (state, action: PayloadAction<string>) => {
-      state.todos = state.todos.filter((item) => item.id !== action.payload);
-      state.filterTodos = applyFilter(state.todos, state.filter);
-    },
+    // addToDo: (state, action: PayloadAction<TToDo>) => {
+    //   state.todos.push({ ...action.payload });
+    //   state.filterTodos = applyFilter(state.todos, state.filter);
+    // },
+
+    // removeTodo: (state, action: PayloadAction<string>) => {
+    //   state.todos = state.todos.filter((item) => item.id !== action.payload);
+    //   state.filterTodos = applyFilter(state.todos, state.filter);
+    // },
     toggleComplete: (state, action: PayloadAction<string>) => {
       const taskId = action.payload;
-      const task = state.todos.find((item) => item.id === taskId);
+      const task = state.todos.find((item) => {
+        console.log("item: ", item);
+        console.log("payload: ", taskId);
+        item._id === taskId;
+      });
       if (task) {
         task.isCompleted = !task.isCompleted;
         state.todos.sort((a, b) => {
@@ -65,7 +70,6 @@ export const todoSlice = createSlice({
   },
 });
 
-export const { addToDo, removeTodo, toggleComplete, filterTodo } =
-  todoSlice.actions;
+export const { toggleComplete, filterTodo } = todoSlice.actions;
 
 export default todoSlice.reducer;
