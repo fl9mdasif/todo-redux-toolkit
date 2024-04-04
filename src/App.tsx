@@ -1,10 +1,10 @@
 import "./App.css";
-import Todo from "./pages/Todo";
+import MainLayout from "./components/layout/MainLayout";
 
 function App() {
   return (
-    <div className="mt-5 flex justify-center item-center  text-">
-      <Todo />
+    <div>
+      <MainLayout />
     </div>
   );
 }

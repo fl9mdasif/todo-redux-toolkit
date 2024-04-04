@@ -2,8 +2,6 @@ import { Button } from "../ui/button";
 import { FaEdit } from "react-icons/fa";
 
 import { FaTrashAlt } from "react-icons/fa";
-import { useAppDispatch } from "@/redux/hooks";
-import { toggleComplete } from "@/redux/features/ToDoSlice";
 import { FormEvent, useState } from "react";
 import { useDeleteTodoMutation, useUpdateTodoMutation } from "@/redux/api/api";
 import {
@@ -44,7 +42,7 @@ const TodoCard = ({
   isCompleted,
 }: TTodoCardProps) => {
   const [updateTodo, { data: todos }] = useUpdateTodoMutation();
-  console.log(todos);
+  // console.log(todos);
   const handleTaskComplete = () => {
     // e.preventDefault();
 
