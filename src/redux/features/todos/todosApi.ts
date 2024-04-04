@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TQueryParam, TResponseRedux } from "../../../types/global";
-import { TProduct } from "../../../types/product.types";
+import { TTask } from "../../../types/todos.types";
 import { baseApi } from "../../api/baseApi";
 
 const todoApi = baseApi.injectEndpoints({
@@ -16,36 +16,21 @@ const todoApi = baseApi.injectEndpoints({
         }
 
         return {
-          url: "/todos",
+          url: "/tasks",
           method: "GET",
           params: params,
         };
       },
-      transformResponse: (response: TResponseRedux<TProduct[]>) => {
+      transformResponse: (response: TResponseRedux<TTask[]>) => {
         return {
           data: response.data,
           meta: response.meta,
         };
       },
     }),
-  }),
-});
-
-const createProductApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    createProduct: builder.mutation<TProduct[], void>({
-      query: (shoesData) => ({
-        url: "/shoes/create-shoes",
-        method: "POST",
-        body: shoesData,
-      }),
-    }),
-    updateProduct: builder.mutation<
-      TProduct,
-      { shoeId: string; updatedData: TProduct }
-    >({
-      query: ({ shoeId, updatedData }) => ({
-        url: `/shoes/${shoeId}`, // Replace with your actual update endpoint
+    update: builder.mutation<TTask, { taskId: string; updatedData: TTask }>({
+      query: ({ taskId, updatedData }) => ({
+        url: `/tasks/${taskId}`, // Replace with your actual update endpoint
         method: "PUT",
         body: updatedData,
       }),
@@ -57,6 +42,19 @@ const createProductApi = baseApi.injectEndpoints({
         body: ids,
       }),
     }),
+  }),
+});
+
+const createProductApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    createProduct: builder.mutation<TTask[], void>({
+      query: (shoesData) => ({
+        url: "/shoes/create-shoes",
+        method: "POST",
+        body: shoesData,
+      }),
+    }),
+
     verifyProduct: builder.query<any, string>({
       query: (id) => {
         return {
@@ -68,10 +66,6 @@ const createProductApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetAllTodosQuery } = todoApi;
-export const {
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useDeleteProductsMutation,
-  useVerifyProductQuery,
-} = createProductApi;
+export const { useGetAllTodosQuery, useUpdateMutation } = todoApi;
+export const { useCreateProductMutation, useVerifyProductQuery } =
+  createProductApi;

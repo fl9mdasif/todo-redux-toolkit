@@ -4,8 +4,8 @@ import {
   Button,
   Form,
   Input,
-  InputNumber,
   Pagination,
+  Select,
   Space,
   Table,
   TableColumnsType,
@@ -13,13 +13,17 @@ import {
 } from "antd";
 import { useState } from "react";
 import { TQueryParam } from "../../types/global";
-import { TProduct } from "../../types/product.types";
+import { TTask } from "../../types/todos.types";
 import { toast } from "sonner";
 import { useCreateOrderMutation } from "../../redux/features/sales/salesApi";
 import Modal from "antd/es/modal/Modal";
-import { useGetAllTodosQuery } from "@/redux/features/todos/todosApi";
+import {
+  useGetAllTodosQuery,
+  useUpdateMutation,
+} from "@/redux/features/todos/todosApi";
+import { useAddTodoMutation } from "@/redux/api/api";
 
-export type TTableData = Partial<TProduct>;
+export type TTableData = Partial<TTask>;
 
 const formItemLayout = {
   labelCol: {
@@ -33,29 +37,39 @@ const formItemLayout = {
 };
 
 const Todos = () => {
-  const [createOrder] = useCreateOrderMutation();
+  const [createOrder, refetch] = useCreateOrderMutation();
+  const [update] = useUpdateMutation();
 
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
-  );
+  const [selectedTotoId, setSelectedTotoId] = useState<string | null>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
-  const openOrderModal = (id: string) => {
+  const openUpdateModal = (id: string) => {
     setIsOrderModalOpen(true);
-    setSelectedProductId(id);
+    setSelectedTotoId(id);
     // console.log(id);
   };
 
   const handleOrderModalOk = () => {
     setIsOrderModalOpen(false);
-    setSelectedProductId(null);
+    setSelectedTotoId(null);
   };
 
   const handleOrderModalCancel = () => {
     setIsOrderModalOpen(false);
-    setSelectedProductId(null);
+    setSelectedTotoId(null);
   };
-  // place order with modal
+
+  const handleUpdateModalOk = () => {
+    setIsUpdateModalOpen(false);
+    setSelectedTotoId(null);
+  };
+  const handleUpdateModalCancel = () => {
+    setIsUpdateModalOpen(false);
+    setSelectedTotoId(null);
+  };
+
+  // create todos
   const onFinish = async (orderData: any) => {
     const toastId = toast.loading("Loading...");
     try {
@@ -94,18 +108,50 @@ const Todos = () => {
 
   //   console.log("params", params);
 
+  // update product
+  const updateTodo = async (updatedFieldData: TTask) => {
+    // console.log(productId);
+    try {
+      setIsUpdateModalOpen(false);
+      const toastId = toast.loading("Loading...");
+      // console.log(selectedTotoId);
+      // Use the createShoes mutation to handle the API call
+      const res: any = await update({
+        taskId: selectedTotoId as string,
+        updatedData: updatedFieldData, // Correct property name
+      });
+
+      console.log("res", res);
+
+      if (!res.data) {
+        toast.error(`Decrease quantity for order `, {
+          id: toastId,
+          duration: 2000,
+        });
+      } else {
+        toast.success("Update product successfully", {
+          id: toastId,
+          duration: 2000,
+        });
+        // refetch();
+      }
+    } catch (error) {
+      console.error("Error creating shoes:", error);
+      toast.error("Error creating shoes. Please try again.");
+    }
+  };
   const [searchTerm, setSearchTerm] = useState("");
 
   const onSearch = (value: string) => {
     setSearchTerm(value);
     setParams([
-      { name: "productName", value },
+      { name: "title", value },
       // Add other filters as needed
     ]);
   };
 
   const metaData = todos?.meta as any;
-  console.log("m", metaData);
+  // console.log("m", metaData);
 
   const tableData: any = todos?.data?.map(
     ({ _id, title, description, priority, deadline, authorId }: any) => ({
@@ -120,220 +166,124 @@ const Todos = () => {
   //   console.log("cover", tableData);
 
   const columns: TableColumnsType<TTableData> = [
-    // {
-    //   title: "Cover",
-    //   key: "coverPhoto",
-    //   render: (item) => (
-    //     <img src={item.coverPhoto} alt="Cover" style={{ width: "60px" }} />
-    //   ),
-    // },
     {
-      title: "Name",
-      key: "productName",
-      dataIndex: "productName",
+      title: "Title",
+      key: "title",
+      dataIndex: "title",
     },
 
     {
-      title: "Product Unique Id",
-      key: "key",
-
-      render: (item) => <p className="w-20">{item.key}</p>,
-    },
-    {
-      title: "Price.",
-      key: "price",
-      dataIndex: "price",
+      title: "Description.",
+      key: "description",
+      dataIndex: "description",
     },
 
-    // brand
+    // priority
     {
-      title: "Brand",
-      key: "brand",
-      dataIndex: "brand",
+      title: "Priority",
+      key: "priority",
+      dataIndex: "priority",
       filters: [
         {
-          text: "Nike",
-          value: "Nike",
+          text: "High",
+          value: "high",
         },
         {
-          text: "Apex",
-          value: "Apex",
+          text: "Medium",
+          value: "medium",
         },
         {
-          text: "Lotto",
-          value: "Lotto",
+          text: "Low",
+          value: "low",
         },
       ],
     },
-    // gender
+    // deadline
     {
-      title: "Gender",
-      key: "gender",
-      dataIndex: "gender",
-      filters: [
-        {
-          text: "Male",
-          value: "Male",
-        },
-        {
-          text: "Female",
-          value: "Female",
-        },
-      ],
+      title: "Deadline",
+      key: "deadline",
+      dataIndex: "deadline",
     },
-    // gender
+    // author
     {
-      title: "Size",
-      key: "size",
-      dataIndex: "size",
-      filters: [
-        {
-          text: "28",
-          value: "28",
-        },
-        {
-          text: "30",
-          value: "30",
-        },
-        {
-          text: "32",
-          value: "32",
-        },
-        {
-          text: "34",
-          value: "34",
-        },
-      ],
-    },
-    //color
-    {
-      title: "Color.",
-      key: "color",
-      dataIndex: "color",
-      filters: [
-        {
-          text: "White",
-          value: "white",
-        },
-        {
-          text: "Red",
-          value: "red",
-        },
-        {
-          text: "Black",
-          value: "black",
-        },
-        {
-          text: "Brown",
-          value: "brown",
-        },
-      ],
-    },
-    // raw materials
-    {
-      title: "Material",
-      key: "rawMaterial",
-      dataIndex: "rawMaterial",
-      filters: [
-        {
-          text: "leather",
-          value: "leather",
-        },
-        {
-          text: "fabric",
-          value: "fabric",
-        },
-        {
-          text: "jeans",
-          value: "jeans",
-        },
-      ],
-    },
-    // category
-    {
-      title: "Category",
-      key: "category",
-      dataIndex: "category",
-      filters: [
-        {
-          text: "Sneakers",
-          value: "sneakers",
-        },
-        {
-          text: "converse",
-          value: "converse",
-        },
-        {
-          text: "loffer",
-          value: "loffer",
-        },
-      ],
+      title: "AuthorId",
+      key: "authorId",
+      dataIndex: "authorId",
     },
 
     {
-      title: "Action",
+      title: "update",
       key: "x",
       render: (item) => {
-        // console.log(item);
+        console.log(item);
         return (
           <Space>
-            {/* <Link to={`/seller/${item.key}`}> */}
             <Button
               onClick={() => {
                 if (item.key) {
-                  openOrderModal(item.key);
+                  openUpdateModal(item.key);
                 }
               }}
               className="bg-green-600 font-bold text-white"
             >
-              Order
+              update
             </Button>
             {/* </Link> */}
             {/* order modal  */}
             <Modal
               title="Order Modal"
               open={isOrderModalOpen}
-              onOk={handleOrderModalOk}
-              onCancel={handleOrderModalCancel}
+              onOk={handleUpdateModalOk}
+              onCancel={handleUpdateModalCancel}
             >
               <div>
                 {/* order form */}
                 <Form
                   {...formItemLayout}
                   variant="filled"
-                  onFinish={onFinish}
+                  onFinish={updateTodo}
                   style={{ maxWidth: 600 }}
                 >
                   {/* product Id*/}
                   <Form.Item
-                    label="Product Id"
-                    name="productId"
-                    initialValue={selectedProductId}
+                    label="task Id"
+                    name="_id"
+                    initialValue={selectedTotoId}
                     rules={[{ required: true, message: "Please input!" }]}
                   >
                     <Input />
                   </Form.Item>
-                  {/* buyer name */}
+
+                  {/* {/* title/} */}
                   <Form.Item
-                    label="Buyer Name "
-                    name="buyer"
-                    rules={[{ required: true, message: "Please input!" }]}
+                    label="title"
+                    name="title"
+                    rules={[{ required: false, message: "Please input!" }]}
                   >
                     <Input />
                   </Form.Item>
-                  {/* buyer name */}
-                  <Form.Item
-                    label="Quantity "
-                    name="quantity"
-                    rules={[{ required: true, message: "Please input!" }]}
-                  >
-                    <InputNumber />
+
+                  <Form.Item label="priority" name="priority">
+                    <Select>
+                      <Select.Option value="high">High</Select.Option>
+                      <Select.Option value="medium">Medium</Select.Option>
+                      <Select.Option value="low">Low</Select.Option>
+                    </Select>
                   </Form.Item>
-                  {/* buyer name */}
+
+                  {/* {/* description/} */}
                   <Form.Item
-                    label="Date of Sales "
-                    name="dateOfSales"
-                    rules={[{ required: true, message: "Please input!" }]}
+                    label="description"
+                    name="description"
+                    rules={[{ required: false, message: "Please input!" }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  {/* {/* deadline/} */}
+                  <Form.Item
+                    label="deadline"
+                    name="deadline"
+                    rules={[{ required: false, message: "Please input!" }]}
                   >
                     <Input />
                   </Form.Item>
@@ -364,36 +314,17 @@ const Todos = () => {
   ) => {
     if (extra.action === "filter") {
       const queryParams: TQueryParam[] = [];
-      filters.brand?.forEach((item) =>
-        queryParams.push({ name: "brand", value: item })
+      filters.priority?.forEach((item) =>
+        queryParams.push({ name: "priority", value: item })
       );
-      filters.gender?.forEach((item) =>
-        queryParams.push({ name: "gender", value: item })
-      );
-      filters.rawMaterial?.forEach((item) =>
-        queryParams.push({ name: "rawMaterial", value: item })
-      );
-      filters.category?.forEach((item) =>
-        queryParams.push({ name: "category", value: item })
-      );
-      filters.color?.forEach((item) =>
-        queryParams.push({ name: "color", value: item })
-      );
-      filters.size?.forEach((item) =>
-        queryParams.push({ name: "size", value: item })
-      );
-      // filters.productName?.forEach((item) =>
-      //   queryParams.push({ name: "productName", value: item })
-      // );
+
       setParams(queryParams);
     }
   };
 
   return (
     <>
-      <h1 className="font-bold">
-        Total : {metaData?.total} available shoes in the inventory
-      </h1>
+      <h1 className="font-bold">Total : {metaData?.total} tasks</h1>
 
       <Input
         style={{ width: "220px" }}

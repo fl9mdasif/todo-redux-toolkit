@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { useState } from "react";
 import { TQueryParam } from "../../types/global";
-import { TProduct } from "../../types/product.types";
+import { TProduct } from "../../types/todos.types";
 import { toast } from "sonner";
 import { useCreateOrderMutation } from "../../redux/features/sales/salesApi";
 import Modal from "antd/es/modal/Modal";
