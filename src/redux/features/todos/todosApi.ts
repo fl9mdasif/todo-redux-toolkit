@@ -28,6 +28,7 @@ const todoApi = baseApi.injectEndpoints({
         };
       },
     }),
+
     update: builder.mutation<TTask, { taskId: string; updatedData: TTask }>({
       query: ({ taskId, updatedData }) => ({
         url: `/tasks/${taskId}`, // Replace with your actual update endpoint
@@ -35,9 +36,10 @@ const todoApi = baseApi.injectEndpoints({
         body: updatedData,
       }),
     }),
-    deleteProducts: builder.mutation<ResponseType, string[]>({
+
+    deleteTodo: builder.mutation<ResponseType, string[]>({
       query: (ids) => ({
-        url: `/shoes/shoeIds`,
+        url: `/tasks/tasksIds`,
         method: "DELETE",
         body: ids,
       }),
@@ -66,6 +68,7 @@ const createProductApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetAllTodosQuery, useUpdateMutation } = todoApi;
+export const { useGetAllTodosQuery, useUpdateMutation, useDeleteTodoMutation } =
+  todoApi;
 export const { useCreateProductMutation, useVerifyProductQuery } =
   createProductApi;

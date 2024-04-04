@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useCreateOrderMutation } from "../../redux/features/sales/salesApi";
 import Modal from "antd/es/modal/Modal";
 import {
+  useDeleteTodoMutation,
   useGetAllTodosQuery,
   useUpdateMutation,
 } from "@/redux/features/todos/todosApi";
@@ -36,8 +37,10 @@ const formItemLayout = {
 };
 
 const Todos = () => {
-  const [createOrder, refetch] = useCreateOrderMutation();
+  // redux apis
+  const [createOrder] = useCreateOrderMutation();
   const [update] = useUpdateMutation();
+  const [deleteTodo] = useDeleteTodoMutation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTotoId, setSelectedTotoId] = useState<string | null>(null);
@@ -93,10 +96,9 @@ const Todos = () => {
   const {
     data: todos,
     // isLoading,
+    refetch,
     isFetching,
   } = useGetAllTodosQuery(params);
-
-  console.log("sstodo", selectedTodos);
 
   // update todo
   const updateTodo = async (updatedFieldData: TTask) => {
@@ -136,7 +138,8 @@ const Todos = () => {
     console.log("ll", [...selectedTodos]);
 
     const productsIds = [...selectedTodos] as string[];
-    const result: any = await deleteProducts(productsIds);
+    const result: any = await deleteTodo(productsIds);
+    console.log("pIds", result);
 
     setSelectedTodos(new Set());
     refetch();
