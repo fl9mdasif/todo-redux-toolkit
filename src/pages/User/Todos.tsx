@@ -21,7 +21,6 @@ import {
   useGetAllTodosQuery,
   useUpdateMutation,
 } from "@/redux/features/todos/todosApi";
-import { useAddTodoMutation } from "@/redux/api/api";
 
 export type TTableData = Partial<TTask>;
 
@@ -40,32 +39,23 @@ const Todos = () => {
   const [createOrder, refetch] = useCreateOrderMutation();
   const [update] = useUpdateMutation();
 
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTotoId, setSelectedTotoId] = useState<string | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedTodos, setSelectedTodos] = useState<Set<string>>(new Set());
 
   const openUpdateModal = (id: string) => {
-    setIsOrderModalOpen(true);
+    setIsModalOpen(true);
     setSelectedTotoId(id);
-    // console.log(id);
-  };
-
-  const handleOrderModalOk = () => {
-    setIsOrderModalOpen(false);
-    setSelectedTotoId(null);
-  };
-
-  const handleOrderModalCancel = () => {
-    setIsOrderModalOpen(false);
-    setSelectedTotoId(null);
+    console.log(id);
   };
 
   const handleUpdateModalOk = () => {
-    setIsUpdateModalOpen(false);
+    setIsModalOpen(false);
     setSelectedTotoId(null);
   };
   const handleUpdateModalCancel = () => {
-    setIsUpdateModalOpen(false);
+    setIsModalOpen(false);
     setSelectedTotoId(null);
   };
 
@@ -106,9 +96,9 @@ const Todos = () => {
     isFetching,
   } = useGetAllTodosQuery(params);
 
-  //   console.log("params", params);
+  console.log("sstodo", selectedTodos);
 
-  // update product
+  // update todo
   const updateTodo = async (updatedFieldData: TTask) => {
     // console.log(productId);
     try {
@@ -121,15 +111,15 @@ const Todos = () => {
         updatedData: updatedFieldData, // Correct property name
       });
 
-      console.log("res", res);
+      // console.log("res", res);
 
       if (!res.data) {
-        toast.error(`Decrease quantity for order `, {
+        toast.error(` failed to update`, {
           id: toastId,
           duration: 2000,
         });
       } else {
-        toast.success("Update product successfully", {
+        toast.success("Update Todo successfully", {
           id: toastId,
           duration: 2000,
         });
@@ -140,9 +130,30 @@ const Todos = () => {
       toast.error("Error creating shoes. Please try again.");
     }
   };
+
+  // deleteMultiple todos
+  const deleteMultipleProducts = async () => {
+    console.log("ll", [...selectedTodos]);
+
+    const productsIds = [...selectedTodos] as string[];
+    const result: any = await deleteProducts(productsIds);
+
+    setSelectedTodos(new Set());
+    refetch();
+    const toastId = toast.loading("Loading...");
+
+    if (result.data.statusCode === 200) {
+      toast.success("Product deleted Successfully", {
+        id: toastId,
+        duration: 2000,
+      });
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const onSearch = (value: string) => {
+    console.log(value);
     setSearchTerm(value);
     setParams([
       { name: "title", value },
@@ -165,7 +176,30 @@ const Todos = () => {
   );
   //   console.log("cover", tableData);
 
+  const onChangeCheckbox = (productId: any, isChecked: boolean) => {
+    console.log(selectedTodos);
+
+    const newSelectedTodos = new Set(selectedTodos);
+    if (isChecked) {
+      newSelectedTodos.add(productId);
+    } else {
+      newSelectedTodos.delete(productId);
+    }
+    setSelectedTodos(newSelectedTodos);
+  };
+
   const columns: TableColumnsType<TTableData> = [
+    {
+      title: "Delete",
+      key: "delete",
+      render: (item) => (
+        <input
+          type="checkbox"
+          // checked={productId === item.key}
+          onChange={(e) => onChangeCheckbox(item.key, e.target.checked)}
+        />
+      ),
+    },
     {
       title: "Title",
       key: "title",
@@ -212,10 +246,34 @@ const Todos = () => {
     },
 
     {
-      title: "update",
+      title: "Delete",
       key: "x",
       render: (item) => {
-        console.log(item);
+        // console.log(item);
+        return (
+          <Space>
+            <Button
+              onClick={() => {
+                if (item.key) {
+                  openUpdateModal(item.key);
+                }
+              }}
+              className="bg-green- font-bold text-white"
+            >
+              ❌
+            </Button>
+            {/* </Link> */}
+            {/* up modal  */}
+          </Space>
+        );
+      },
+      width: "1%",
+    },
+    {
+      title: "Actions",
+      key: "x",
+      render: (item) => {
+        // console.log(item);
         return (
           <Space>
             <Button
@@ -229,10 +287,10 @@ const Todos = () => {
               update
             </Button>
             {/* </Link> */}
-            {/* order modal  */}
+            {/* up modal  */}
             <Modal
-              title="Order Modal"
-              open={isOrderModalOpen}
+              title="update-Modal"
+              open={isModalOpen}
               onOk={handleUpdateModalOk}
               onCancel={handleUpdateModalCancel}
             >
@@ -332,6 +390,14 @@ const Todos = () => {
         value={searchTerm}
         onChange={(e) => onSearch(e.target.value)}
       />
+      <div>
+        <Button
+          className="bg-red-500 w-48 text-white bold-md"
+          onClick={() => deleteMultipleProducts()}
+        >
+          Delete Selected todos
+        </Button>
+      </div>
 
       <Table
         loading={isFetching}
