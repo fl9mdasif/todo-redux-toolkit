@@ -39,6 +39,17 @@ const formItemLayout = {
 const Todos = () => {
   // redux apis
   const [createOrder] = useCreateOrderMutation();
+  const [params, setParams] = useState<TQueryParam[] | undefined>(undefined);
+
+  const [page, setPage] = useState(1);
+
+  // api's
+  const {
+    data: todos,
+    // isLoading,
+    refetch,
+    isFetching,
+  } = useGetAllTodosQuery(params);
   const [update] = useUpdateMutation();
   const [deleteTodo] = useDeleteTodoMutation();
 
@@ -50,7 +61,7 @@ const Todos = () => {
   const openUpdateModal = (id: string) => {
     setIsModalOpen(true);
     setSelectedTotoId(id);
-    console.log(id);
+    // console.log(id);
   };
 
   const handleUpdateModalOk = () => {
@@ -63,7 +74,7 @@ const Todos = () => {
   };
 
   // create todos
-  const onFinish = async (orderData: any) => {
+  const createTodo = async (orderData: any) => {
     const toastId = toast.loading("Loading...");
     try {
       // Use the createShoes mutation to handle the API call
@@ -88,17 +99,6 @@ const Todos = () => {
       toast.error("Error creating shoes. Please try again.");
     }
   };
-
-  const [params, setParams] = useState<TQueryParam[] | undefined>(undefined);
-
-  const [page, setPage] = useState(1);
-
-  const {
-    data: todos,
-    // isLoading,
-    refetch,
-    isFetching,
-  } = useGetAllTodosQuery(params);
 
   // update todo
   const updateTodo = async (updatedFieldData: TTask) => {
@@ -125,7 +125,7 @@ const Todos = () => {
           id: toastId,
           duration: 2000,
         });
-        // refetch();
+        refetch();
       }
     } catch (error) {
       console.error("Error creating shoes:", error);
@@ -133,13 +133,37 @@ const Todos = () => {
     }
   };
 
+  // update complete by button click
+  const markCompleted = async (todoId: string) => {
+    try {
+      const toastId = toast.loading("Updating task...");
+      const updatedTask: any = {
+        status: "completed" as string, // Update the isCompleted field to true
+      };
+      const res: any = await update({
+        taskId: todoId,
+        updatedData: updatedTask,
+      });
+
+      if (res.data) {
+        toast.success("Task updated successfully", { id: toastId });
+        refetch();
+      } else {
+        toast.error("Failed to update task");
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+      toast.error("Error updating task. Please try again.");
+    }
+  };
+
   // deleteMultiple todos
   const deleteMultipleProducts = async () => {
-    console.log("ll", [...selectedTodos]);
+    // console.log("ll", [...selectedTodos]);
+    // console.log("pIds", result);
 
     const productsIds = [...selectedTodos] as string[];
     const result: any = await deleteTodo(productsIds);
-    console.log("pIds", result);
 
     setSelectedTodos(new Set());
     refetch();
@@ -155,6 +179,7 @@ const Todos = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  // search todo
   const onSearch = (value: string) => {
     console.log(value);
     setSearchTerm(value);
@@ -168,13 +193,22 @@ const Todos = () => {
   // console.log("m", metaData);
 
   const tableData: any = todos?.data?.map(
-    ({ _id, title, description, priority, deadline, authorId }: any) => ({
+    ({
+      _id,
+      title,
+      description,
+      priority,
+      deadline,
+      authorId,
+      status,
+    }: any) => ({
       key: _id,
       title,
       description,
       priority,
       deadline,
       authorId,
+      status,
     })
   );
   //   console.log("cover", tableData);
@@ -198,7 +232,6 @@ const Todos = () => {
       render: (item) => (
         <input
           type="checkbox"
-          // checked={productId === item.key}
           onChange={(e) => onChangeCheckbox(item.key, e.target.checked)}
         />
       ),
@@ -219,7 +252,21 @@ const Todos = () => {
     {
       title: "Priority",
       key: "priority",
-      dataIndex: "priority",
+      render: (item) => {
+        console.log(item);
+        return (
+          <div className="flex items-center gap-2">
+            <p
+              className={`size-3 rounded-full 
+            ${item.priority === "high" ? "bg-red-500" : null} 
+            ${item.priority === "medium" ? "bg-yellow-500" : null} 
+            ${item.priority === "low" ? "bg-green-500" : null} 
+            `}
+            ></p>
+            <div>{item.priority}</div>
+          </div>
+        );
+      },
       filters: [
         {
           text: "High",
@@ -241,36 +288,38 @@ const Todos = () => {
       key: "deadline",
       dataIndex: "deadline",
     },
-    // author
     {
-      title: "AuthorId",
-      key: "authorId",
-      dataIndex: "authorId",
-    },
-
-    {
-      title: "Delete",
-      key: "x",
+      title: "Status",
+      key: "status",
       render: (item) => {
         // console.log(item);
         return (
-          <Space>
-            <Button
-              onClick={() => {
-                if (item.key) {
-                  openUpdateModal(item.key);
-                }
-              }}
-              className="bg-green- font-bold text-white"
-            >
-              ❌
-            </Button>
-            {/* </Link> */}
-            {/* up modal  */}
-          </Space>
+          <div className="flex items-center gap-2">
+            <p
+              className={`size-3 rounded-full 
+            ${item.status === "pending" ? "bg-red-500" : null} 
+            ${item.status === "in-progress" ? "bg-yellow-500" : null} 
+            ${item.status === "completed" ? "bg-green-500" : null} 
+            `}
+            ></p>
+            <div>{item.status}</div>
+          </div>
         );
       },
-      width: "1%",
+    },
+
+    // mark completed
+    {
+      title: "Completed",
+      key: "isCompleted",
+      render: (item) => (
+        <Button
+          onClick={() => markCompleted(item.key)}
+          disabled={item.isCompleted} // Disable button if task is already completed
+        >
+          ✅
+        </Button>
+      ),
     },
     {
       title: "Actions",
@@ -329,6 +378,16 @@ const Todos = () => {
                       <Select.Option value="high">High</Select.Option>
                       <Select.Option value="medium">Medium</Select.Option>
                       <Select.Option value="low">Low</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item label="status" name="status">
+                    <Select>
+                      <Select.Option value="pending">pending</Select.Option>
+                      <Select.Option value="in-progress">
+                        in-progress
+                      </Select.Option>
+                      <Select.Option value="completed">completed</Select.Option>
                     </Select>
                   </Form.Item>
 
@@ -408,6 +467,7 @@ const Todos = () => {
         dataSource={tableData}
         onChange={onChange}
         pagination={false}
+        scroll={{ x: true }} // Enable horizontal scrolling
       />
       <Pagination
         current={page}

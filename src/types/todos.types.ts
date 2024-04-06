@@ -3,6 +3,7 @@ export type TTask = {
   description: string;
   priority: "low" | "medium" | "high";
   deadline: Date;
-  isCompleted?: false;
+  // isCompleted?: boolean;
+  status: string;
   authorId: string;
 };
