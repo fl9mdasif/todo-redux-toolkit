@@ -16,9 +16,25 @@ const todoApi = baseApi.injectEndpoints({
         }
 
         return {
-          url: "/tasks",
+          url: `/tasks`,
           method: "GET",
           params: params,
+        };
+      },
+      transformResponse: (response: TResponseRedux<TTask[]>) => {
+        return {
+          data: response.data,
+          meta: response.meta,
+        };
+      },
+    }),
+
+    getUsersTodo: builder.query<any, string>({
+      query: (authorId) => {
+        return {
+          url: `/tasks/${authorId}/getUserTask`,
+
+          method: "GET",
         };
       },
       transformResponse: (response: TResponseRedux<TTask[]>) => {
@@ -56,19 +72,9 @@ const createProductApi = baseApi.injectEndpoints({
         body: shoesData,
       }),
     }),
-
-    verifyProduct: builder.query<any, string>({
-      query: (id) => {
-        return {
-          url: `/shoes/verify/${id}`,
-          method: "GET",
-        };
-      },
-    }),
   }),
 });
 
 export const { useGetAllTodosQuery, useUpdateMutation, useDeleteTodoMutation } =
   todoApi;
-export const { useCreateProductMutation, useVerifyProductQuery } =
-  createProductApi;
+export const { useCreateProductMutation } = createProductApi;

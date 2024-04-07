@@ -22,6 +22,8 @@ import {
   useGetAllTodosQuery,
   useUpdateMutation,
 } from "@/redux/features/todos/todosApi";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/authApi/authSlice";
 
 export type TTableData = Partial<TTask>;
 
@@ -37,6 +39,7 @@ const formItemLayout = {
 };
 
 const Todos = () => {
+  const user = useSelector(selectCurrentUser);
   // redux apis
   const [createOrder] = useCreateOrderMutation();
   const [params, setParams] = useState<TQueryParam[] | undefined>(undefined);
@@ -57,6 +60,11 @@ const Todos = () => {
   const [selectedTotoId, setSelectedTotoId] = useState<string | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedTodos, setSelectedTodos] = useState<Set<string>>(new Set());
+
+  const [searchTerm, setSearchTerm] = useState("");
+  console.log("Search Term:", searchTerm);
+
+  // console.log(user);
 
   const openUpdateModal = (id: string) => {
     setIsModalOpen(true);
@@ -176,8 +184,6 @@ const Todos = () => {
       });
     }
   };
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   // search todo
   const onSearch = (value: string) => {
@@ -446,12 +452,19 @@ const Todos = () => {
     <>
       <h1 className="font-bold">Total : {metaData?.total} tasks</h1>
 
+      {/* <Input
+        style={{ width: "220px" }}
+        placeholder="Search by task name"
+        value={searchTerm}
+        onChange={(e) => onSearch(e.target.value)}
+      /> */}
       <Input
         style={{ width: "220px" }}
-        placeholder="Search by product name"
+        placeholder="Search by title "
         value={searchTerm}
         onChange={(e) => onSearch(e.target.value)}
       />
+
       <div>
         <Button
           className="bg-red-500 w-48 text-white bold-md"

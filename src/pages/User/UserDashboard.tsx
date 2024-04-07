@@ -4,7 +4,9 @@ import { useSelector } from "react-redux";
 const UserDashboard = () => {
   const user = useSelector(selectCurrentUser);
 
-  console.log(user);
+  // const { data: getUsersTodo } = useGetUsersTodoQuery(user?._id);
+
+  // console.log(getUsersTodo);
   return <div>{user?.username}'s Dashboard</div>;
 };
 
