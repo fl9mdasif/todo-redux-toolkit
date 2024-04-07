@@ -6,7 +6,16 @@ import { baseApi } from "../../api/baseApi";
 const todoApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllTodos: builder.query({
+      // query: (args) => {
+      //   const params = new URLSearchParams();
+
+      //   if (args) {
+      //     args.forEach((item: TQueryParam) => {
+      //       params.append(item.name, item.value as string);
+      //     });
+      //   }
       query: (args) => {
+        console.log(args);
         const params = new URLSearchParams();
 
         if (args) {
@@ -14,7 +23,6 @@ const todoApi = baseApi.injectEndpoints({
             params.append(item.name, item.value as string);
           });
         }
-
         return {
           url: `/tasks`,
           method: "GET",

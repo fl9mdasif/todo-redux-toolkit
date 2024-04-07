@@ -24,6 +24,7 @@ import {
 } from "@/redux/features/todos/todosApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/authApi/authSlice";
+import { todo } from "node:test";
 
 export type TTableData = Partial<TTask>;
 
@@ -42,7 +43,7 @@ const Todos = () => {
   const user = useSelector(selectCurrentUser);
   // redux apis
   const [createOrder] = useCreateOrderMutation();
-  const [params, setParams] = useState<TQueryParam[] | undefined>(undefined);
+  const [params, setParams] = useState<TQueryParam[]>([]);
 
   const [page, setPage] = useState(1);
 
@@ -52,7 +53,14 @@ const Todos = () => {
     // isLoading,
     refetch,
     isFetching,
-  } = useGetAllTodosQuery(params);
+  } = useGetAllTodosQuery([
+    { name: "limit", value: 5 },
+    { name: "page", value: page },
+    { name: "sort", value: "createdAt" },
+    ...params,
+  ]);
+  const metaData = todos?.meta as any;
+
   const [update] = useUpdateMutation();
   const [deleteTodo] = useDeleteTodoMutation();
 
@@ -62,8 +70,8 @@ const Todos = () => {
   const [selectedTodos, setSelectedTodos] = useState<Set<string>>(new Set());
 
   const [searchTerm, setSearchTerm] = useState("");
-  console.log("Search Term:", searchTerm);
 
+  console.log("Search Term:", metaData);
   // console.log(user);
 
   const openUpdateModal = (id: string) => {
@@ -195,7 +203,6 @@ const Todos = () => {
     ]);
   };
 
-  const metaData = todos?.meta as any;
   // console.log("m", metaData);
 
   const tableData: any = todos?.data?.map(
@@ -451,20 +458,12 @@ const Todos = () => {
   return (
     <>
       <h1 className="font-bold">Total : {metaData?.total} tasks</h1>
-
-      {/* <Input
-        style={{ width: "220px" }}
-        placeholder="Search by task name"
-        value={searchTerm}
-        onChange={(e) => onSearch(e.target.value)}
-      /> */}
       <Input
         style={{ width: "220px" }}
         placeholder="Search by title "
         value={searchTerm}
         onChange={(e) => onSearch(e.target.value)}
       />
-
       <div>
         <Button
           className="bg-red-500 w-48 text-white bold-md"
@@ -473,7 +472,6 @@ const Todos = () => {
           Delete Selected todos
         </Button>
       </div>
-
       <Table
         loading={isFetching}
         columns={columns}
@@ -482,14 +480,14 @@ const Todos = () => {
         pagination={false}
         scroll={{ x: true }} // Enable horizontal scrolling
       />
+
       <Pagination
         current={page}
         onChange={(value) => setPage(value)}
-        pageSize={metaData?.limit}
+        pageSize={metaData?.page}
         total={metaData?.total}
       />
     </>
-    // <p>hi</p>
   );
 };
 
